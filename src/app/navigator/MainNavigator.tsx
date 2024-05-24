@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
@@ -37,22 +36,23 @@ const MainNavigator = (): JSX.Element => {
       <Tab.Screen
         name={ScreenNames.HOME_NAVIGATOR}
         component={NewsScreen}
-        options={{
-          tabBarIcon: ({focused}) =>
-            focused ? (
-              <Icon source="location-exit" size={12} color="red" />
-            ) : (
-              <Icon source="location-enter" size={12} color="black" />
-            ),
-          tabBarLabel: ({focused}) =>
-            createLabel(Strings.bottomTabs.home, focused),
-        }}
+        // options={{
+        //   tabBarIcon: ({focused}) =>
+        //     focused ? (
+        //       <Icon source="location-exit" size={12} color="red" />
+        //     ) : (
+        //       <Icon source="location-enter" size={12} color="black" />
+        //     ),
+        //   tabBarLabel: ({focused}) =>
+        //     createLabel(Strings.bottomTabs.home, focused),
+        // }}
       />
     </Tab.Navigator>
   );
 };
 
 const TabLabel = ({label, focused}: {label: string; focused: boolean}) => {
+  console.log(label);
   return (
     <Text
       style={[

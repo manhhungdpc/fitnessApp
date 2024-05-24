@@ -16,6 +16,14 @@ const config = {
   transformer: {
     babelTransformerPath: require.resolve('react-native-svg-transformer'),
   },
+  project: {
+    android: {
+      unstable_reactLegacyComponentNames: ['Video'],
+    },
+    ios: {
+      unstable_reactLegacyComponentNames: ['Video'],
+    },
+  },
   resolver: {
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],

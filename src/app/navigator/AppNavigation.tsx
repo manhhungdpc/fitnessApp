@@ -7,20 +7,44 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import AuthNavigator from './AuthNavigation';
 import {
   getNetworkStatus,
+  getToken,
+  setError,
+  useAccessToken,
   useAppDispatch,
+  useAppError,
+  useAppLanguage,
   useNetworkStatus,
 } from '../redux/appSlice';
 import NetworkError from '@src/features/utils/NetworkErrors';
+import {Snackbar} from 'react-native-paper';
+import MainNavigator from './MainNavigator';
 
 const Stack = createStackNavigator();
+
+const AppSnackBar = () => {
+  const error = useAppError();
+  const dispatch = useAppDispatch();
+  const language = useAppLanguage();
+  return (
+    <Snackbar
+      visible={error !== null}
+      onDismiss={() => dispatch(setError(null))}
+      action={{
+        label: 'Opp! Error',
+        onPress: () => {},
+      }}>
+      {error}
+    </Snackbar>
+  );
+};
 
 const AppNavigator = () => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
-
+  const accessToken = useAccessToken();
   useEffect(() => {
-    console.log(1);
     dispatch(getNetworkStatus());
+    dispatch(getToken());
   }, [dispatch]);
 
   if (!useNetworkStatus) {
@@ -29,7 +53,9 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer fallback={<></>}>
+      {/* ({accessToken ? <MainNavigator /> : <AuthNavigator />}) */}
       <AuthNavigator />
+      <AppSnackBar />
     </NavigationContainer>
   );
 };

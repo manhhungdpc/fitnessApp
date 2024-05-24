@@ -2,9 +2,14 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import ScreenNames from './ScreenNames';
 import UsernameLoginScreen from '@src/features/auth/screen/Username';
+import {useAppLanguage} from '../redux/appSlice';
+import {RootStackParamList} from './RootParam';
+import PasswordLoginScreen from '@src/features/auth/screen/Password';
+import ChangePasswordScreen from '@src/features/auth/screen/ChangePassword';
 
 const AuthNavigator = () => {
-  const stack = createStackNavigator();
+  const stack = createStackNavigator<RootStackParamList>();
+  const language = useAppLanguage();
   return (
     <stack.Navigator
       screenOptions={{
@@ -14,7 +19,7 @@ const AuthNavigator = () => {
         name={ScreenNames.LOGIN_USERNAME_SCREEN}
         component={UsernameLoginScreen}
         options={{
-          headerTitle: '',
+          headerTitle: language.auth.username_title,
           headerStyle: {
             backgroundColor: '#fff',
             shadowColor: '#ffffff',
@@ -27,7 +32,25 @@ const AuthNavigator = () => {
             elevation: 0,
           },
           headerTintColor: 'black',
-          headerShown: true,
+          headerShown: false,
+        }}
+      />
+      <stack.Screen
+        name={ScreenNames.LOGIN_PASSWORD_SCREEN}
+        component={PasswordLoginScreen}
+        options={{
+          headerTitle: language.auth.password_title,
+          headerTintColor: 'black',
+          headerShown: false,
+        }}
+      />
+      <stack.Screen
+        name={ScreenNames.CHANGE_PASSWORD_SCREEN}
+        component={ChangePasswordScreen}
+        options={{
+          headerTitle: language.auth.password_title,
+          headerTintColor: 'black',
+          headerShown: false,
         }}
       />
     </stack.Navigator>

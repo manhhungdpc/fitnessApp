@@ -1,89 +1,178 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice} from '@reduxjs/toolkit';
-import type {PayloadAction} from '@reduxjs/toolkit';
+import {setAccessToken, setError} from '@src/app/redux/appSlice';
+import {AppDispatch, RootState} from '@src/app/redux/store';
 import axios from 'axios';
+import {baseUrl} from 'index';
+import {useSelector} from 'react-redux';
+import DeviceInfo from 'react-native-device-info';
+import {LOCAL_STORAGE_KEY} from '@src/base/localStorage';
 
-interface User {
-  fullname?: String;
-  phone?: String;
-  email?: String;
-  profilePicture?: String;
-  is_staff?: Boolean;
-  is_trainer?: Boolean;
-  organization?: String;
-  locations?: Array<any>;
-  is_lifeguard?: Boolean;
-  is_cashier?: Boolean;
-  can_update_customer?: Boolean;
-  can_checkin?: Boolean;
-  can_create_receipt?: Boolean;
+export enum UserStatus {
+  active = 'ACTIVE',
+  pending = 'PENDING',
+  inactive = 'INACTIVE',
 }
 
-interface UserState {
+export interface HelpText {
+  username?: string;
+  password?: string;
+  re_password?: string;
+}
+
+interface User {
+  fullname?: string;
+  phone?: string;
+  email?: string;
+  profilePicture?: string;
+  is_staff?: boolean;
+  is_trainer?: boolean;
+  organization?: string;
+  locations?: any;
+  is_lifeguard?: boolean;
+  is_cashier?: boolean;
+  can_update_customer?: boolean;
+  can_checkin?: boolean;
+  can_create_receipt?: boolean;
+  status?: UserStatus;
+}
+
+interface AuthState {
   user: User | null;
-  username?: String | null;
-  password?: String | null;
+  phone?: string | null;
+  username?: string | null;
+  password?: string | null;
   rememberme: boolean;
+  organization: [] | null;
+  onLoading: boolean;
+  help_text?: HelpText;
 }
 
 const initialState = {
   user: null,
+  phone: null,
   username: null,
   password: null,
   rememberme: true,
-} satisfies UserState as UserState;
+  organization: null,
+  onLoading: false,
+} satisfies AuthState as AuthState;
 
 const AuthSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<User>) {
+    setUser(state, action) {
       state.user = action.payload;
     },
 
-    setUsername(state, action: PayloadAction<string>) {
+    setOrganization(state, action) {
+      state.organization = action.payload;
+    },
+
+    setLoading(state, action) {
+      state.onLoading = action.payload;
+    },
+
+    setUsername(state, action) {
       state.username = action.payload;
     },
 
-    setPassword(state, action: PayloadAction<string>) {
+    setPassword(state, action) {
       state.password = action.payload;
+    },
+
+    setUserAvatar(state, action) {
+      if (state.user !== null) {
+        state.user.profilePicture = action.payload;
+      }
+    },
+
+    setHelpText(state, action) {
+      state.help_text = action.payload;
     },
   },
 });
 
-export const {setUser, setUsername, setPassword} = AuthSlice.actions;
+export const {
+  setUser,
+  setUsername,
+  setPassword,
+  setLoading,
+  setOrganization,
+  setUserAvatar,
+  setHelpText,
+} = AuthSlice.actions;
 export default AuthSlice.reducer;
 
-// export function fetchAccessToken(username, password) {
-//   return async dispatch => {
-//     dispatch(prefetchAccessToken());
+const useUser = () => {
+  return useSelector((state: RootState) => state.auth.user);
+};
 
-//     let deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
-//     let deviceType = (await AsyncStorage.getItem('deviceType')) || '';
+const useAuthOnLoading = () => {
+  return useSelector((state: RootState) => state.auth.onLoading);
+};
 
-//     let data = {
-//       username: username,
-//       password: password,
-//       deviceToken: deviceToken,
-//       deviceType: deviceType,
-//     };
+const useAuthUsername = () => {
+  return useSelector((state: RootState) => state.auth.username);
+};
 
-//     axios
-//       .post('/api/customers/get-access-token', data)
-//       .then(result => {
-//         data = result.data || {};
-//         if (data.access) {
-//           dispatch(loginSuccess(data));
-//         } else {
-//           dispatch(loginFailed());
-//         }
-//       })
-//       .catch(error => {
-//         if (error.response.status) {
-//           dispatch(loginFailed());
-//         }
-//       });
-//   };
-// }
+const useAuthOrgainization = () => {
+  return useSelector((state: RootState) => state.auth.organization);
+};
+
+const useHelpText = () => {
+  return useSelector((state: RootState) => state.auth.help_text);
+};
+
+export {
+  useUser,
+  useAuthOnLoading,
+  useAuthUsername,
+  useAuthOrgainization,
+  useHelpText,
+};
+
+export function fetchAccessToken(username: string, password: string) {
+  return async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+    dispatch(setHelpText({}));
+
+    // let deviceToken = (await DeviceInfo.getDeviceToken()) || '';
+    // let deviceType = DeviceInfo.getDeviceType() || '';
+
+    let data = {
+      username: username,
+      password: password,
+      deviceToken: '',
+      deviceType: 'ios',
+    };
+
+    console.log(username);
+    console.log(password);
+
+    axios
+      .post(baseUrl + '/api/customers/get-access-token', data)
+      .then(async response => {
+        const result = response.data || {};
+        if (result.access) {
+          dispatch(setAccessToken(result.access));
+          await AsyncStorage.setItem(
+            LOCAL_STORAGE_KEY.access_token,
+            result.access,
+          );
+        } else {
+          console.log(result);
+          dispatch(setHelpText({password: result.error}));
+        }
+      })
+      .catch(error => {
+        if (error.response.status) {
+          dispatch(setError(error));
+        }
+      });
+  };
+}
 
 // export function logout() {
 //   return async dispatch => {
@@ -144,33 +233,80 @@ export default AuthSlice.reducer;
 //   };
 // }
 
-// export function fetchAccountList(phone) {
-//   return async (dispatch: AppDispatch, getState: AppState) => {
-//     dispatch(prefetchAccountList());
+export function fetchAccountList(phone: any) {
+  return async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+    dispatch(setHelpText({}));
+    let formData = new FormData();
+    formData.append('phone', phone);
+    axios
+      .post(baseUrl + '/api/auths/get-user', formData, {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then(result => {
+        dispatch(setLoading(false));
+        let data = result.data || {};
+        if (data.success) {
+          dispatch(setUsername(data.data[0].username));
+          dispatch(
+            setUser({
+              fullname: data.data[0].fullname,
+              status: data.data[0].status,
+            }),
+          );
+        } else {
+          dispatch(setHelpText({username: data.errors}));
+        }
+      })
+      .catch(error => {
+        dispatch(setError(error));
+      });
+  };
+}
 
-//     let formData = new FormData();
-//     formData.append('phone', phone);
-//     axios
-//       .post('/api/auths/get-user', formData, {
-//         headers: {
-//           Accept: 'application/json',
-//           'Content-Type': 'multipart/form-data',
-//         },
-//       })
-//       .then(result => {
-//         let data = result.data || {};
-//         if (data.success) {
-//           dispatch(fetchAccountListSuccess(data));
-//         } else {
-//           dispatch(fetchAccountListFailed(data));
-//           dispatch(removeLogged(phone));
-//         }
-//       })
-//       .catch(error => {
-//         dispatch(fetchAccountListFailed({errors: 'Đã có lỗi mạng'}));
-//       });
-//   };
-// }
+export function changePasswordFirstTime(
+  currentPassword: string,
+  newPassword: string,
+  confirmNewPassword: string,
+  username?: string,
+) {
+  return async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+    dispatch(setHelpText({}));
+    const token = await AsyncStorage.getItem('token');
+    let data = new FormData();
+    data.append('currentPassword', currentPassword);
+    data.append('newPassword', newPassword);
+    data.append('confirmNewPassword', confirmNewPassword);
+    data.append('username', username);
+    axios
+      .post(baseUrl + '/api/customers/change-password-first-time', data, {
+        headers: {
+          Authorization: 'Bearer ' + token,
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then(async response => {
+        const result = response.data;
+        if (result.status) {
+          dispatch(setAccessToken(result.data.token));
+          await AsyncStorage.setItem(
+            LOCAL_STORAGE_KEY.access_token,
+            result.access,
+          );
+        } else {
+          dispatch(setHelpText({re_passwod: result.errors.password}));
+        }
+      })
+      .catch(error => {
+        dispatch(setError(error));
+      });
+  };
+}
 
 // export function updateProfileImage(uri, type) {
 //   return async (dispatch, getState) => {

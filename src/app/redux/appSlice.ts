@@ -21,6 +21,7 @@ interface AppState {
   networkAvailable: boolean;
   checkingNetwork: boolean;
   language: AppStrings;
+  error: string | null;
 }
 
 const initialState = {
@@ -32,6 +33,7 @@ const initialState = {
   networkAvailable: false,
   checkingNetwork: false,
   language: vi,
+  error: null,
 } satisfies AppState as AppState;
 
 const AppSlice = createSlice({
@@ -65,6 +67,10 @@ const AppSlice = createSlice({
     setlanguage(state, action) {
       state.language = action.payload;
     },
+
+    setError(state, action) {
+      state.error = action.payload;
+    },
   },
 });
 
@@ -75,6 +81,7 @@ export const {
   setNotification,
   setNetworkAvailable,
   setCheckingNetwork,
+  setError,
 } = AppSlice.actions;
 export default AppSlice.reducer;
 
@@ -98,6 +105,10 @@ const useCheckingNetwork = () => {
   return useSelector((state: RootState) => state.app.checkingNetwork);
 };
 
+const useAppError = () => {
+  return useSelector((state: RootState) => state.app.error);
+};
+
 const useAppDispatch = () => useDispatch<AppDispatch>();
 
 export {
@@ -107,6 +118,7 @@ export {
   useAppLanguage,
   useCheckingNetwork,
   useAppDispatch,
+  useAppError,
 };
 
 export function getNetworkStatus() {
