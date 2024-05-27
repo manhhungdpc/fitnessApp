@@ -6,19 +6,20 @@ import Typography from '@src/resources/Typography';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import ScreenNames from './ScreenNames';
 import {isIOS} from '@src/base/common';
-import {useAppDispatch, useAppLanguage} from '../redux/appSlice';
+import {useAccessToken, useAppDispatch, useAppLanguage} from '../redux/appSlice';
 import {Icon, MD2Colors, Text} from 'react-native-paper';
 import {getUserProfile} from '@src/features/auth/action/authSlice';
 import QrScreen from '@src/features/qr/screen/QrScreen';
 import HomeNavigation from './HomeNavigation';
 import ScheduleNavigation from './SchuduleNavigation';
+import ProfileNavigation from './ProfileNavigation';
 
 export type MainParamList = {
   [ScreenNames.HOME_NAVIGATOR]: undefined;
   [ScreenNames.OTHER_NAVIGATOR]: undefined;
   [ScreenNames.QR_SCREEN]: undefined;
   [ScreenNames.SCHEDULE_NAVIGATOR]: undefined;
-  [ScreenNames.PROFILE_SCREEN]: undefined;
+  [ScreenNames.PROFILE_NAVIGATOR]: undefined;
   [ScreenNames.NEW_DETAILS]: undefined;
 };
 
@@ -26,9 +27,12 @@ const Tab = createBottomTabNavigator<MainParamList>();
 
 const MainNavigator = (): JSX.Element => {
   const dispatch = useAppDispatch();
+  const accessToken = useAccessToken();
   useEffect(() => {
-    dispatch(getUserProfile());
-  }, [dispatch]);
+    if (accessToken) {
+      dispatch(getUserProfile());
+    }
+  }, [accessToken, dispatch]);
 
   const createHeader = () => <View style={styles.tabBarHeader} />;
   const language = useAppLanguage();
@@ -74,8 +78,8 @@ const MainNavigator = (): JSX.Element => {
         }}
       />
       <Tab.Screen
-        name={ScreenNames.PROFILE_SCREEN}
-        component={QrScreen}
+        name={ScreenNames.PROFILE_NAVIGATOR}
+        component={ProfileNavigation}
         options={{
           tabBarIcon: ({focused}) => TabBarIcon(focused, 'account-circle'),
           tabBarLabel: ({focused}) =>

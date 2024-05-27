@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice} from '@reduxjs/toolkit';
-import {setAccessToken, setError} from '@src/app/redux/appSlice';
+import {setAccessToken, setError, setToken} from '@src/app/redux/appSlice';
 import {AppDispatch, RootState} from '@src/app/redux/store';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
@@ -138,66 +138,70 @@ export {
 
 export function fetchAccessToken(username: string, password: string) {
   return async (dispatch: AppDispatch) => {
-    dispatch(setLoading(true));
-    dispatch(setHelpText({}));
+    try {
+      dispatch(setLoading(true));
+      dispatch(setHelpText({}));
 
-    let deviceToken = (await DeviceInfo.getDeviceToken()) || '';
-    let deviceType = DeviceInfo.getDeviceType() || '';
+      // let deviceToken = (await DeviceInfo.getDeviceToken()) || '';
+      // let deviceType = DeviceInfo.getDeviceType() || '';
 
-    let data = {
-      username: username,
-      password: password,
-      deviceToken: deviceToken,
-      deviceType: deviceType,
-    };
+      let data = {
+        username: username,
+        password: password,
+        deviceToken: 'deviceToken',
+        deviceType: 'deviceType',
+      };
 
-    axios
-      .post('/api/customers/get-access-token', data)
-      .then(async response => {
-        const result = response.data || {};
-        if (result.access) {
-          dispatch(setAccessToken(result.access));
-          await AsyncStorage.setItem(
-            LOCAL_STORAGE_KEY.access_token,
-            result.access,
-          );
-        } else {
-          console.log(result);
-          dispatch(setHelpText({password: result.error}));
-        }
-      })
-      .catch(error => {
-        if (error.response.status) {
-          dispatch(setError(error));
-        }
-      });
+      const response = await axios.post(
+        '/api/customers/get-access-token',
+        data,
+      );
+      const result = response.data || {};
+
+      if (result.access) {
+        await AsyncStorage.setItem('accessToken', result.access);
+        dispatch(setToken(result.access));
+      } else {
+        dispatch(setHelpText({password: result.error}));
+      }
+      dispatch(setLoading(false));
+    } catch (error: any) {
+      dispatch(setLoading(false));
+      if (error.response && error.response.status) {
+        dispatch(setError(error.response.data)); // Sending specific error data
+      } else {
+        dispatch(setError({message: 'An unknown error occurred'}));
+      }
+    }
   };
 }
 
 export function logout() {
   return async (dispatch: AppDispatch) => {
-    const token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
-
-    axios
-      .post('/api/customers/log-out', {
-        headers: {Authorization: 'Bearer ' + token},
-      })
-      .then(result => {
+    try {
+      const token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
+      if (token) {
+        const result = await axios.post(
+          '/api/customers/log-out',
+          {},
+          {
+            headers: {Authorization: 'Bearer ' + token},
+          },
+        );
         if (result.data.success) {
           dispatch(setAccessToken(null));
-          AsyncStorage.removeItem(LOCAL_STORAGE_KEY.access_token);
+          await AsyncStorage.removeItem(LOCAL_STORAGE_KEY.access_token);
         }
-      })
-      .catch(error => {
-        //force logout
-        dispatch(setError(error));
-      });
+      }
+    } catch (error) {
+      dispatch(setError('Error during logout'));
+    }
   };
 }
 
 export function getUserProfile() {
-  return async (dispatch: AppDispatch) => {
-    const token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
+    const token = getState().app.accessToken;
     axios
       .get('/api/customers/profile', {
         headers: {Authorization: 'Bearer ' + token},
@@ -289,119 +293,3 @@ export function changePasswordFirstTime(
       });
   };
 }
-
-// export function updateProfileImage(uri, type) {
-//   return async (dispatch, getState) => {
-//     const user = getState().login.user;
-//     const token = await AsyncStorage.getItem('token');
-//     let data = new FormData();
-
-//     if (uri) {
-//       data.append('profilePictureDraft', {
-//         uri: uri,
-//         type: type,
-//         name: 'image.jpg',
-//       });
-//     }
-
-//     axios
-//       .post('/api/customers/update-profile-picture', data, {
-//         headers: {
-//           Authorization: 'Bearer ' + token,
-//           Accept: 'application/json',
-//           'Content-Type': 'multipart/form-data',
-//         },
-//       })
-//       .then(response => {
-//         const result = response.data;
-//         if (result.success) {
-//           if (!user.is_staff) {
-//             Alert.alert(
-//               'Tải ảnh thành công',
-//               'Ảnh của bạn đã được gửi tới phòng tập. Chúng tôi sẽ xác nhận và phê duyệt ảnh của bạn trong thời gian sớm nhất.',
-//             );
-//           } else {
-//             dispatch(
-//               setUserProfilePicture(axios.defaults.baseURL + result.uri),
-//             );
-//           }
-//         } else {
-//           Alert.alert('Ảnh bị lỗi, vui lòng upload lại');
-//         }
-//       })
-//       .catch(error => {
-//         Alert.alert('Lỗi mạng');
-//       });
-//   };
-// }
-
-// export function doRefreshToken() {
-//   return async (dispatch, getState) => {
-//     const refreshToken = await AsyncStorage.getItem('refresh');
-//     axios
-//       .post(
-//         'api/token/refresh/',
-//         {refresh: refreshToken},
-//         {
-//           headers: {
-//             Accept: 'application/json',
-//             timeout: 2000,
-//           },
-//         },
-//       )
-//       .then(response => {
-//         if (response.status === 200) {
-//           let result = response.data;
-//           AsyncStorage.setItem('token', result.access);
-//         }
-//       });
-//   };
-// }
-
-// export function getProfileLoginThisDevice() {
-//   return async dispatch => {
-//     const profileStorage = await AsyncStorage.getItem('profile');
-//     const profiles = JSON.parse(profileStorage);
-//     dispatch(cacheProfileLogin(profiles));
-//   };
-// }
-
-// export function removeLogged(phone) {
-//   return async dispatch => {
-//     let profileStorage = await AsyncStorage.getItem('profile');
-//     if (profileStorage) {
-//       profileStorage = JSON.parse(profileStorage);
-//       profileStorage.map((profile, index) => {
-//         if (profile.phone === phone) {
-//           profileStorage.splice(index, 1);
-//           profileStorage = JSON.stringify(profileStorage);
-//           AsyncStorage.setItem('profile', profileStorage);
-//           return dispatch(getProfileLoginThisDevice());
-//         }
-//       });
-//     }
-//   };
-// }
-
-// async function cacheProfile(phone, profilePicture) {
-//   const newItem = {phone: phone, profilePicture: profilePicture};
-//   let profileStorage = await AsyncStorage.getItem('profile');
-//   if (profileStorage) {
-//     profileStorage = JSON.parse(profileStorage);
-//     let exist = false;
-//     profileStorage.map(profile => {
-//       if (profile.phone === newItem.phone) {
-//         profile.profilePicture = newItem.profilePicture;
-//         exist = true;
-//       }
-//     });
-//     if (!exist) {
-//       profileStorage.push(newItem);
-//     }
-//   } else {
-//     profileStorage = [newItem];
-//   }
-//   profileStorage = JSON.stringify(profileStorage);
-//   AsyncStorage.setItem('profile', profileStorage);
-//   return profileStorage;
-// }

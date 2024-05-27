@@ -9,16 +9,17 @@ import {
   getNetworkStatus,
   getToken,
   setError,
-  setToken,
   useAccessToken,
   useAppDispatch,
   useAppError,
   useAppLanguage,
+  useAppLoadingStatus,
   useNetworkStatus,
 } from '../redux/appSlice';
 import NetworkError from '@src/features/utils/NetworkErrors';
 import {Snackbar} from 'react-native-paper';
 import MainNavigator from './MainNavigator';
+import { DefaultLoading } from '@src/features/utils/Loading';
 
 const Stack = createStackNavigator();
 
@@ -43,10 +44,15 @@ const AppNavigator = () => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const accessToken = useAccessToken();
+  const onLoading = useAppLoadingStatus();
   useEffect(() => {
     dispatch(getNetworkStatus());
     dispatch(getToken());
   }, [dispatch]);
+
+  if (onLoading) {
+    return <DefaultLoading />;
+  }
 
   if (!useNetworkStatus) {
     return <NetworkError />;
@@ -54,9 +60,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer fallback={<></>}>
-      <MainNavigator />
-      {/* {accessToken && <MainNavigator />}
-      {!accessToken && <AuthNavigator />} */}
+      {accessToken ? <MainNavigator /> : <AuthNavigator />}
       <AppSnackBar />
     </NavigationContainer>
   );

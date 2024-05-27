@@ -5,6 +5,7 @@ import {AppStrings, vi} from '@src/resources/Strings';
 import {LOCAL_STORAGE_KEY} from '@src/base/localStorage';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from './store';
+import { setLoading } from '@src/features/auth/action/authSlice';
 
 const APP_STATUS = {
   on_load: 'Loading',
@@ -143,17 +144,19 @@ export function getNetworkStatus() {
 }
 
 export function getToken() {
-  return async (dispatch: (arg0: {payload: string}) => void) => {
+  return async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
     let token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
     if (token) {
       dispatch(setAccessToken(token));
     }
+    dispatch(setLoading(false));
   };
 }
 
 export function setToken(token: string) {
   return async (dispatch: (arg0: {payload: string}) => void) => {
-    dispatch(setAccessToken(setAccessToken(token)));
     await AsyncStorage.setItem(LOCAL_STORAGE_KEY.access_token, token);
+    dispatch(setAccessToken(setAccessToken(token)));
   };
 }

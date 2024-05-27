@@ -146,8 +146,6 @@ export function fetchSchedules() {
         dispatch(setLoading(false));
         let result = response.data;
         dispatch(setMaxPage(result.maxPages));
-        console.log('21312312');
-        console.log(result.data);
         const updatedSchedule = [...currentSchedules, ...result.data];
         dispatch(setSchedule(updatedSchedule));
       });

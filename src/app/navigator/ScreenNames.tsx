@@ -13,6 +13,7 @@ enum ScreenNames {
   OTHER_NAVIGATOR = 'OtherNavigator',
   HOME_NAVIGATOR = 'HomeNavigator',
   SCHEDULE_NAVIGATOR = 'ScheudleNavigator',
+  PROFILE_NAVIGATOR = 'ProfileNavigator',
   NEW_DETAILS = 'New Details',
   QR_SCREEN = 'QrScreen',
   SCHEDULE_SCREEN = 'ScheduleScreen',

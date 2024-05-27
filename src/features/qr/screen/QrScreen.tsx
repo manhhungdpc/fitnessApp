@@ -3,7 +3,11 @@ import {RefreshControl, ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Card, Text} from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import {fetchQrCode, useQrCode, useQrCodeLoading} from '../action/qrSlice';
-import {useAppDispatch, useAppLanguage} from '@src/app/redux/appSlice';
+import {
+  setError,
+  useAppDispatch,
+  useAppLanguage,
+} from '@src/app/redux/appSlice';
 import Colors from '@src/resources/Colors';
 import {useUser} from '@src/features/auth/action/authSlice';
 
@@ -28,7 +32,7 @@ const QrScreen = () => {
       <Button
         icon="account-convert"
         mode="elevated"
-        onPress={() => console.log('Pressed')}
+        onPress={() => setError('on develop')}
         style={styles.btnReferalContainer}>
         <Text>{language.callToReferral}</Text>
       </Button>
