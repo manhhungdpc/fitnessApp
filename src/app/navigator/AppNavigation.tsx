@@ -9,6 +9,7 @@ import {
   getNetworkStatus,
   getToken,
   setError,
+  setToken,
   useAccessToken,
   useAppDispatch,
   useAppError,
@@ -53,8 +54,9 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer fallback={<></>}>
-      {/* ({accessToken ? <MainNavigator /> : <AuthNavigator />}) */}
-      <AuthNavigator />
+      <MainNavigator />
+      {/* {accessToken && <MainNavigator />}
+      {!accessToken && <AuthNavigator />} */}
       <AppSnackBar />
     </NavigationContainer>
   );

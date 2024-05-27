@@ -3,7 +3,6 @@ import {createSlice} from '@reduxjs/toolkit';
 import {setAccessToken, setError} from '@src/app/redux/appSlice';
 import {AppDispatch, RootState} from '@src/app/redux/store';
 import axios from 'axios';
-import {baseUrl} from 'index';
 import {useSelector} from 'react-redux';
 import DeviceInfo from 'react-native-device-info';
 import {LOCAL_STORAGE_KEY} from '@src/base/localStorage';
@@ -21,12 +20,14 @@ export interface HelpText {
 }
 
 interface User {
+  id?: number;
   fullname?: string;
   phone?: string;
   email?: string;
   profilePicture?: string;
   is_staff?: boolean;
   is_trainer?: boolean;
+  gender?: string;
   organization?: string;
   locations?: any;
   is_lifeguard?: boolean;
@@ -35,6 +36,8 @@ interface User {
   can_checkin?: boolean;
   can_create_receipt?: boolean;
   status?: UserStatus;
+  point?: number;
+  referral_timeout?: boolean;
 }
 
 interface AuthState {
@@ -138,21 +141,18 @@ export function fetchAccessToken(username: string, password: string) {
     dispatch(setLoading(true));
     dispatch(setHelpText({}));
 
-    // let deviceToken = (await DeviceInfo.getDeviceToken()) || '';
-    // let deviceType = DeviceInfo.getDeviceType() || '';
+    let deviceToken = (await DeviceInfo.getDeviceToken()) || '';
+    let deviceType = DeviceInfo.getDeviceType() || '';
 
     let data = {
       username: username,
       password: password,
-      deviceToken: '',
-      deviceType: 'ios',
+      deviceToken: deviceToken,
+      deviceType: deviceType,
     };
 
-    console.log(username);
-    console.log(password);
-
     axios
-      .post(baseUrl + '/api/customers/get-access-token', data)
+      .post('/api/customers/get-access-token', data)
       .then(async response => {
         const result = response.data || {};
         if (result.access) {
@@ -174,64 +174,45 @@ export function fetchAccessToken(username: string, password: string) {
   };
 }
 
-// export function logout() {
-//   return async dispatch => {
-//     let token = await AsyncStorage.getItem('token');
-//     let deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+export function logout() {
+  return async (dispatch: AppDispatch) => {
+    const token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
 
-//     axios
-//       .post(
-//         '/api/customers/log-out',
-//         {deviceToken: deviceToken},
-//         {headers: {Authorization: 'Bearer ' + token}},
-//       )
-//       .then(result => {
-//         if (result.data.success) {
-//           dispatch(logoutSuccess());
-//         } else {
-//           dispatch(logoutFailed());
-//         }
-//       })
-//       .catch(error => {
-//         //force logout
-//         dispatch(logoutSuccess());
-//       });
-//   };
-// }
+    axios
+      .post('/api/customers/log-out', {
+        headers: {Authorization: 'Bearer ' + token},
+      })
+      .then(result => {
+        if (result.data.success) {
+          dispatch(setAccessToken(null));
+          AsyncStorage.removeItem(LOCAL_STORAGE_KEY.access_token);
+        }
+      })
+      .catch(error => {
+        //force logout
+        dispatch(setError(error));
+      });
+  };
+}
 
-// export function getUserProfile(numTried = 1) {
-//   return async (dispatch, getState) => {
-//     let token = await AsyncStorage.getItem('token');
-//     axios
-//       .get('/api/customers/profile', {
-//         headers: {Authorization: 'Bearer ' + token},
-//         timeout: 5000,
-//       })
-//       .then(result => {
-//         if (result.status === 200) {
-//           dispatch(setUserProfile(result.data));
-//           const user = getState().login.user;
-//           cacheProfile(user.phone, user.profilePicture);
-//         }
-//       })
-//       .catch(error => {
-//         if (error.response === undefined) {
-//           return setTimeout(
-//             () =>
-//               Alert.alert('Lỗi kết nối', 'Vui lòng kiểm tra lại kết nối mạng', [
-//                 {
-//                   text: 'Kết nối lại',
-//                   onPress: () => dispatch(getUserProfile()),
-//                 },
-//               ]),
-//             2000,
-//           );
-//         }
-//         return dispatch(logout());
-//         // }
-//       });
-//   };
-// }
+export function getUserProfile() {
+  return async (dispatch: AppDispatch) => {
+    const token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
+    axios
+      .get('/api/customers/profile', {
+        headers: {Authorization: 'Bearer ' + token},
+        timeout: 1500,
+      })
+      .then(result => {
+        if (result.status === 200) {
+          dispatch(setUser(result.data));
+        }
+      })
+      .catch(error => {
+        return dispatch(setError(error.message));
+      });
+  };
+}
 
 export function fetchAccountList(phone: any) {
   return async (dispatch: AppDispatch) => {
@@ -240,7 +221,7 @@ export function fetchAccountList(phone: any) {
     let formData = new FormData();
     formData.append('phone', phone);
     axios
-      .post(baseUrl + '/api/auths/get-user', formData, {
+      .post('/api/auths/get-user', formData, {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'multipart/form-data',
@@ -262,7 +243,7 @@ export function fetchAccountList(phone: any) {
         }
       })
       .catch(error => {
-        dispatch(setError(error));
+        return dispatch(setError(error.message));
       });
   };
 }
@@ -276,14 +257,15 @@ export function changePasswordFirstTime(
   return async (dispatch: AppDispatch) => {
     dispatch(setLoading(true));
     dispatch(setHelpText({}));
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
+
     let data = new FormData();
     data.append('currentPassword', currentPassword);
     data.append('newPassword', newPassword);
     data.append('confirmNewPassword', confirmNewPassword);
     data.append('username', username);
     axios
-      .post(baseUrl + '/api/customers/change-password-first-time', data, {
+      .post('/api/customers/change-password-first-time', data, {
         headers: {
           Authorization: 'Bearer ' + token,
           Accept: 'application/json',
@@ -303,7 +285,7 @@ export function changePasswordFirstTime(
         }
       })
       .catch(error => {
-        dispatch(setError(error));
+        return dispatch(setError(error.message));
       });
   };
 }

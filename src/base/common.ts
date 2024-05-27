@@ -1,3 +1,4 @@
+import {IMAGE_BASE_URL} from 'index';
 import moment from 'moment';
 import {Platform} from 'react-native';
 
@@ -18,4 +19,8 @@ const isToday = (dateString?: string): boolean => {
 const withTimeout = (millis: number) =>
   new Promise(resolve => setTimeout(resolve, millis));
 
-export {isAndroid, isIOS, isToday, withTimeout};
+const getImageWithBaseUrl = (url: string) => {
+  return IMAGE_BASE_URL + url;
+};
+
+export {isAndroid, isIOS, isToday, withTimeout, getImageWithBaseUrl};

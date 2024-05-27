@@ -1,26 +1,36 @@
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Icon} from 'react-native-paper';
 import Typography from '@src/resources/Typography';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import Strings from '@src/resources/localization/Strings';
 import ScreenNames from './ScreenNames';
 import {isIOS} from '@src/base/common';
-import NewsScreen from '@src/features/home/screen/News';
+import {useAppDispatch, useAppLanguage} from '../redux/appSlice';
+import {Icon, MD2Colors, Text} from 'react-native-paper';
+import {getUserProfile} from '@src/features/auth/action/authSlice';
+import QrScreen from '@src/features/qr/screen/QrScreen';
+import HomeNavigation from './HomeNavigation';
 
 export type MainParamList = {
   [ScreenNames.HOME_NAVIGATOR]: undefined;
   [ScreenNames.OTHER_NAVIGATOR]: undefined;
+  [ScreenNames.QR_SCREEN]: undefined;
+  [ScreenNames.SCHEDULE_SCREEN]: undefined;
+  [ScreenNames.PROFILE_SCREEN]: undefined;
+  [ScreenNames.NEW_DETAILS]: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainParamList>();
 
 const MainNavigator = (): JSX.Element => {
-  const createLabel = (label: string, focused: boolean) => (
-    <TabLabel label={label} focused={focused} />
-  );
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getUserProfile());
+  }, [dispatch]);
+
+  const createHeader = () => <View style={styles.tabBarHeader} />;
+  const language = useAppLanguage();
 
   return (
     <Tab.Navigator
@@ -30,29 +40,57 @@ const MainNavigator = (): JSX.Element => {
         tabBarLabelStyle: Typography.text12Regular,
         tabBarItemStyle: styles.tabBarItem,
         tabBarIconStyle: {marginTop: isIOS() ? 0 : 12},
-        headerShown: false,
         tabBarBackground: BottomBarBackground,
       }}>
       <Tab.Screen
         name={ScreenNames.HOME_NAVIGATOR}
-        component={NewsScreen}
-        // options={{
-        //   tabBarIcon: ({focused}) =>
-        //     focused ? (
-        //       <Icon source="location-exit" size={12} color="red" />
-        //     ) : (
-        //       <Icon source="location-enter" size={12} color="black" />
-        //     ),
-        //   tabBarLabel: ({focused}) =>
-        //     createLabel(Strings.bottomTabs.home, focused),
-        // }}
+        component={HomeNavigation}
+        options={{
+          tabBarIcon: ({focused}) => TabBarIcon(focused, 'home'),
+          tabBarLabel: ({focused}) =>
+            createLabel(language.bottomTabs.home, focused),
+          header: () => createHeader(),
+        }}
+      />
+      <Tab.Screen
+        name={ScreenNames.QR_SCREEN}
+        component={QrScreen}
+        options={{
+          tabBarIcon: ({focused}) => TabBarIcon(focused, 'qrcode-scan'),
+          tabBarLabel: ({focused}) =>
+            createLabel(language.bottomTabs.qr, focused),
+          header: () => createHeader(),
+        }}
+      />
+      <Tab.Screen
+        name={ScreenNames.SCHEDULE_SCREEN}
+        component={QrScreen}
+        options={{
+          tabBarIcon: ({focused}) => TabBarIcon(focused, 'calendar-clock'),
+          tabBarLabel: ({focused}) =>
+            createLabel(language.bottomTabs.schedule, focused),
+          header: () => createHeader(),
+        }}
+      />
+      <Tab.Screen
+        name={ScreenNames.PROFILE_SCREEN}
+        component={QrScreen}
+        options={{
+          tabBarIcon: ({focused}) => TabBarIcon(focused, 'account-circle'),
+          tabBarLabel: ({focused}) =>
+            createLabel(language.bottomTabs.profile, focused),
+          header: () => createHeader(),
+        }}
       />
     </Tab.Navigator>
   );
 };
 
+const createLabel = (label: string, focused: boolean) => (
+  <TabLabel label={label} focused={focused} />
+);
+
 const TabLabel = ({label, focused}: {label: string; focused: boolean}) => {
-  console.log(label);
   return (
     <Text
       style={[
@@ -62,6 +100,10 @@ const TabLabel = ({label, focused}: {label: string; focused: boolean}) => {
       {label}
     </Text>
   );
+};
+
+const TabBarIcon = (focused: boolean, iconName: string) => {
+  return <Icon source={iconName} size={18} color={focused ? 'red' : 'black'} />;
 };
 
 export const BottomBarBackground = () => {
@@ -82,6 +124,10 @@ const styles = StyleSheet.create({
   },
   tabBarBackgroundImage: {height: isIOS() ? 56 : 64, width: '100%'},
   tabBarItem: {},
+  tabBarHeader: {
+    height: 70,
+    backgroundColor: MD2Colors.blueGrey700,
+  },
 });
 
 export default MainNavigator;

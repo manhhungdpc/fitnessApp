@@ -22,6 +22,7 @@ interface AppState {
   checkingNetwork: boolean;
   language: AppStrings;
   error: string | null;
+  mediaPlaying?: string;
 }
 
 const initialState = {
@@ -71,6 +72,10 @@ const AppSlice = createSlice({
     setError(state, action) {
       state.error = action.payload;
     },
+
+    setMediaPlaying(state, action) {
+      state.mediaPlaying = action.payload;
+    },
   },
 });
 
@@ -82,6 +87,7 @@ export const {
   setNetworkAvailable,
   setCheckingNetwork,
   setError,
+  setMediaPlaying,
 } = AppSlice.actions;
 export default AppSlice.reducer;
 
@@ -109,6 +115,10 @@ const useAppError = () => {
   return useSelector((state: RootState) => state.app.error);
 };
 
+const useMediaPlaying = () => {
+  return useSelector((state: RootState) => state.app.mediaPlaying);
+};
+
 const useAppDispatch = () => useDispatch<AppDispatch>();
 
 export {
@@ -119,6 +129,7 @@ export {
   useCheckingNetwork,
   useAppDispatch,
   useAppError,
+  useMediaPlaying,
 };
 
 export function getNetworkStatus() {
@@ -133,7 +144,7 @@ export function getNetworkStatus() {
 
 export function getToken() {
   return async (dispatch: (arg0: {payload: string}) => void) => {
-    let token = await AsyncStorage.getItem('token');
+    let token = await AsyncStorage.getItem(LOCAL_STORAGE_KEY.access_token);
     if (token) {
       dispatch(setAccessToken(token));
     }

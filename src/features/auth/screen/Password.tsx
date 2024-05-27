@@ -2,14 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import {Image, StyleSheet, View} from 'react-native';
 
-import {
-  Avatar,
-  Button,
-  Card,
-  IconButton,
-  Text,
-  TextInput,
-} from 'react-native-paper';
+import {Button, Card, IconButton, Text, TextInput} from 'react-native-paper';
 
 import Video, {VideoRef} from 'react-native-video';
 import Colors from '@src/resources/Colors';
@@ -54,19 +47,16 @@ const UserInput = (props: {
   help_text: HelpText | undefined;
   avatar: any;
   action: (arg0: string) => void;
-  backScreen: ()=>void;
+  backScreen: () => void;
 }) => {
   const [textInput, setTextInput] = useState('');
+  const lefIcon = () => (
+    <IconButton icon="arrow-left" size={30} onPress={props.backScreen} />
+  );
 
   return (
     <Card style={styles.card}>
-      <Card.Title
-        title=""
-        subtitle=""
-        left={() => (
-          <IconButton icon="arrow-left" size={30} onPress={props.backScreen} />
-        )}
-      />
+      <Card.Title title="" subtitle="" left={() => lefIcon()} />
       <Card.Content>
         <View style={styles.logo}>{props.avatar}</View>
         <TextInput

@@ -7,11 +7,15 @@ enum ScreenNames {
   DEVELOPING_FEATURE_SCREEN = 'DevelopingFeature',
   MANAGE_ACCOUNT_SCREEN = 'ManageAccount',
   PROFILE_SCREEN = 'Profile',
-  PERSONAL_INFORMATION_SCREEN = 'PersonalInformation',
+  PERSONAL_INFORMATION_SCREEN = 'Personal Information',
   TERMS_SCREEN = 'Terms',
-  CHANGE_PASSWORD_SCREEN = 'ChangePassword',
+  CHANGE_PASSWORD_SCREEN = 'Change Password',
   OTHER_NAVIGATOR = 'OtherNavigator',
   HOME_NAVIGATOR = 'HomeNavigator',
+  NEW_DETAILS = 'New Details',
+  QR_SCREEN = 'QrScreen',
+  SCHEDULE_SCREEN = 'ScheduleScreen',
+  MAIN_TAB_BAR = 'MainTabBar',
 }
 
 export default ScreenNames;

@@ -1,4 +1,5 @@
 export type RootStackParamList = {
+  [x: string]: any;
   Home: undefined;
   Schedule: undefined;
   Setting: undefined;
@@ -6,4 +7,5 @@ export type RootStackParamList = {
   LoginUserName: undefined;
   LoginPassword: undefined;
   ChangePassword: undefined;
+  NewDetails: undefined;
 };

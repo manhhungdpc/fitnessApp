@@ -35,6 +35,15 @@ export interface AppStrings {
   endDate: string;
   numberPractices: string;
   numberRemained: string;
+  qrWelcomeText: string;
+  callToReferral: string;
+  bottomTabs: {
+    home: string;
+    qr: string;
+    profile: string;
+    store: string;
+    schedule: string;
+  };
 }
 
 const vi = <AppStrings>{
@@ -63,6 +72,15 @@ const vi = <AppStrings>{
   endDate: 'Ngày kết thúc',
   numberPractices: 'Số buổi tập',
   numberRemained: 'Số buổi tập còn lại',
+  qrWelcomeText: 'Kính chào quý khách',
+  callToReferral: 'Giới thiệu',
+  bottomTabs: {
+    home: 'Trang chủ',
+    qr: 'QR code',
+    profile: 'Hồ Sơ',
+    store: 'Cửa hàng',
+    schedule: 'Lịch lớp',
+  },
 };
 
 // const en = <AppStrings>{};
