@@ -12,9 +12,11 @@ enum ScreenNames {
   CHANGE_PASSWORD_SCREEN = 'Change Password',
   OTHER_NAVIGATOR = 'OtherNavigator',
   HOME_NAVIGATOR = 'HomeNavigator',
+  SCHEDULE_NAVIGATOR = 'ScheudleNavigator',
   NEW_DETAILS = 'New Details',
   QR_SCREEN = 'QrScreen',
   SCHEDULE_SCREEN = 'ScheduleScreen',
+  SERVICE_SCREEN = 'Services',
   MAIN_TAB_BAR = 'MainTabBar',
 }
 

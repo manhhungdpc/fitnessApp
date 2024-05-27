@@ -1,5 +1,5 @@
 import {useAppDispatch} from '@src/app/redux/appSlice';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {
   fetchNewsDetails,
   useHomeLoading,
@@ -11,9 +11,6 @@ import {Text} from 'react-native-paper';
 
 const NewDetails = () => {
   const dispatch = useAppDispatch();
-  useEffect(() => {
-    dispatch(fetchNewsDetails());
-  }, [dispatch]);
   const loading = useHomeLoading();
   const details = useNewDetails();
 

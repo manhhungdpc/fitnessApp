@@ -8,6 +8,6 @@ import {name as appName} from './app.json';
 
 AppRegistry.registerComponent(appName, () => App);
 
-axios.defaults.baseURL = 'http://127.0.0.1:8000';
+axios.defaults.baseURL = 'https://erp.alphasius.com/';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 export const IMAGE_BASE_URL = 'https://erp.alphasius.com/';

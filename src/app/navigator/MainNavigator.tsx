@@ -11,12 +11,13 @@ import {Icon, MD2Colors, Text} from 'react-native-paper';
 import {getUserProfile} from '@src/features/auth/action/authSlice';
 import QrScreen from '@src/features/qr/screen/QrScreen';
 import HomeNavigation from './HomeNavigation';
+import ScheduleNavigation from './SchuduleNavigation';
 
 export type MainParamList = {
   [ScreenNames.HOME_NAVIGATOR]: undefined;
   [ScreenNames.OTHER_NAVIGATOR]: undefined;
   [ScreenNames.QR_SCREEN]: undefined;
-  [ScreenNames.SCHEDULE_SCREEN]: undefined;
+  [ScreenNames.SCHEDULE_NAVIGATOR]: undefined;
   [ScreenNames.PROFILE_SCREEN]: undefined;
   [ScreenNames.NEW_DETAILS]: undefined;
 };
@@ -63,8 +64,8 @@ const MainNavigator = (): JSX.Element => {
         }}
       />
       <Tab.Screen
-        name={ScreenNames.SCHEDULE_SCREEN}
-        component={QrScreen}
+        name={ScreenNames.SCHEDULE_NAVIGATOR}
+        component={ScheduleNavigation}
         options={{
           tabBarIcon: ({focused}) => TabBarIcon(focused, 'calendar-clock'),
           tabBarLabel: ({focused}) =>

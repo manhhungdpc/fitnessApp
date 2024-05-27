@@ -1,88 +1,85 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
-import {
-  fetchNewsDetails,
-  fetchNewsList,
-  News,
-  setDetailId,
-  setNews,
-  setPage,
-  useHomeLoading,
-  useHomeMaxPages,
-  useHomePage,
-  useNewsList,
-} from '../action/homeSlice';
-import {useAppDispatch} from '@src/app/redux/appSlice';
-import {DefaultLoading} from '@src/features/utils/Loading';
-import {Card, Icon, MD2Colors, Text} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from '@src/app/navigator/RootParam';
 import ScreenNames from '@src/app/navigator/ScreenNames';
+import {useAppDispatch} from '@src/app/redux/appSlice';
 import {getImageWithBaseUrl} from '@src/base/common';
+import {ItemSeparator} from '@src/features/home/screen/News';
+import {DefaultLoading} from '@src/features/utils/Loading';
+import React, {useCallback, useEffect, useState} from 'react';
+import {FlatList, StyleSheet} from 'react-native';
+import {Card, MD2Colors, Text} from 'react-native-paper';
+import {
+  fetchSchedules,
+  fetchServices,
+  Service,
+  setPage,
+  setScheduleId,
+  setServices,
+  useScheduleLoading,
+  useScheduleMaxPages,
+  useSchedulePage,
+  useServices,
+} from '../actions/scheduleSlice';
 
-const Item = (props: {item: News}) => {
+const Item = (props: {item: Service}) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<RootStackParamList>();
 
   const onPress = () => {
-    dispatch(setDetailId(props.item.id));
-    dispatch(fetchNewsDetails());
+    dispatch(setScheduleId(props.item.id));
+    dispatch(fetchSchedules());
     const timer = setTimeout(() => {
-      navigation.navigate(ScreenNames.NEW_DETAILS);
+      navigation.navigate(ScreenNames.SCHEDULE_SCREEN);
       clearTimeout(timer);
     }, 100);
   };
   return (
     <Card onPress={() => onPress()}>
-      <Card.Cover source={{uri: getImageWithBaseUrl(props.item.introImage)}} />
+      {props.item && props.item.cover && (
+        <Card.Cover source={{uri: getImageWithBaseUrl(props.item.cover)}} />
+      )}
       <Card.Content>
         <Text style={styles.itemTitle} variant="titleMedium">
           {props.item.name}
         </Text>
-        <Icon source={'newspaper-check'} size={30} color={MD2Colors.green400} />
+        {/* <Icon source={'calendar-check'} size={30} color={MD2Colors.green400} /> */}
       </Card.Content>
     </Card>
   );
 };
 
-export const ItemSeparator = () => {
-  return <View style={styles.separator} />;
-};
-
-const NewsScreen = () => {
+const ServiceScreen = () => {
   const dispatch = useAppDispatch();
-  const news = useNewsList();
-  const loading = useHomeLoading();
-  const page = useHomePage();
-  const maxPage = useHomeMaxPages();
+  const services = useServices();
+  const loading = useScheduleLoading();
+  const page = useSchedulePage();
+  const maxPage = useScheduleMaxPages();
   const [onScroll, setOnScroll] = useState(false);
 
   useEffect(() => {
-    dispatch(setNews([]));
-    dispatch(setPage(1));
-    dispatch(fetchNewsList(1));
+    dispatch(fetchServices());
   }, [dispatch, page]);
 
   const renderItem = useCallback(
-    ({item}: {item: News}) => <Item item={item} />,
+    ({item}: {item: Service}) => <Item item={item} />,
     [],
   );
 
   const handleEndReached = useCallback(() => {
     if (page < maxPage && onScroll) {
       dispatch(setPage(page + 1));
-      dispatch(fetchNewsList(page + 1));
+      dispatch(fetchServices());
     }
   }, [page, maxPage, onScroll, dispatch]);
   const handleRefresh = useCallback(() => {
-    dispatch(setNews([]));
     dispatch(setPage(1));
-    dispatch(fetchNewsList(1));
+    dispatch(setServices([]));
+    dispatch(fetchServices());
   }, [dispatch]);
 
   return (
     <FlatList
-      data={news}
+      data={services}
       renderItem={renderItem}
       keyExtractor={(item, __idx) => item.id.toString()}
       ListEmptyComponent={<DefaultLoading />}
@@ -101,7 +98,7 @@ const NewsScreen = () => {
   );
 };
 
-export default NewsScreen;
+export default ServiceScreen;
 
 const styles = StyleSheet.create({
   separator: {height: 10},
